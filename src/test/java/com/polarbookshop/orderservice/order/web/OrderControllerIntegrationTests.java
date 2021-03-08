@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.polarbookshop.orderservice.book.Book;
 import com.polarbookshop.orderservice.book.BookClient;
 import com.polarbookshop.orderservice.order.domain.Order;
+import com.polarbookshop.orderservice.order.domain.OrderRepository;
 import com.polarbookshop.orderservice.order.domain.OrderStatus;
 import com.polarbookshop.orderservice.order.event.OrderAcceptedMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -22,8 +24,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -42,6 +42,9 @@ class OrderControllerIntegrationTests {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private OrderRepository orderRepository;
 
 	@Autowired
 	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -67,6 +70,11 @@ class OrderControllerIntegrationTests {
 	private static String r2dbcUrl() {
 		return String.format("r2dbc:postgresql://%s:%s/%s", postgresql.getHost(),
 				postgresql.getFirstMappedPort(), postgresql.getDatabaseName());
+	}
+
+	@BeforeEach
+	void setup() {
+		orderRepository.deleteAll().subscribe();
 	}
 
 	@Test

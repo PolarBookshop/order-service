@@ -44,8 +44,7 @@ class OrderRepositoryR2dbcTests {
 
     @Test
     void findOrderByIdWhenNotExisting() {
-        Publisher<Order> testSetup = orderRepository
-                .deleteAll()
+        Publisher<Order> testSetup = orderRepository.deleteAll()
                 .then(orderRepository.findById(394L));
 
         StepVerifier.create(testSetup)
@@ -57,8 +56,7 @@ class OrderRepositoryR2dbcTests {
     void createRejectedOrder() {
         Order rejectedOrder = new Order("1234567890", 3, OrderStatus.REJECTED);
 
-        Publisher<Order> testSetup = orderRepository
-                .deleteAll()
+        Publisher<Order> testSetup = orderRepository.deleteAll()
                 .then(orderRepository.save(rejectedOrder));
 
         StepVerifier.create(testSetup)
