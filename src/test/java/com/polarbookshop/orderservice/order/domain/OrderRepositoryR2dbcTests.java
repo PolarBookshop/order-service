@@ -1,8 +1,8 @@
 package com.polarbookshop.orderservice.order.domain;
 
 import com.polarbookshop.orderservice.order.persistence.DataConfig;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.reactivestreams.Publisher;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -42,12 +42,14 @@ class OrderRepositoryR2dbcTests {
                 postgresql.getFirstMappedPort(), postgresql.getDatabaseName());
     }
 
+    @BeforeEach
+    void setup() {
+        orderRepository.deleteAll().subscribe();
+    }
+
     @Test
     void findOrderByIdWhenNotExisting() {
-        Publisher<Order> testSetup = orderRepository.deleteAll()
-                .then(orderRepository.findById(394L));
-
-        StepVerifier.create(testSetup)
+        StepVerifier.create(orderRepository.findById(394L))
                 .expectNextCount(0)
                 .verifyComplete();
     }
@@ -56,10 +58,7 @@ class OrderRepositoryR2dbcTests {
     void createRejectedOrder() {
         Order rejectedOrder = new Order("1234567890", 3, OrderStatus.REJECTED);
 
-        Publisher<Order> testSetup = orderRepository.deleteAll()
-                .then(orderRepository.save(rejectedOrder));
-
-        StepVerifier.create(testSetup)
+        StepVerifier.create(orderRepository.save(rejectedOrder))
                 .expectNextMatches(order -> order.getStatus().equals(OrderStatus.REJECTED))
                 .verifyComplete();
     }
