@@ -2,6 +2,8 @@ package com.polarbookshop.orderservice.order.domain;
 
 import com.polarbookshop.orderservice.order.persistence.DataConfig;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -18,6 +20,8 @@ import org.springframework.test.context.DynamicPropertySource;
 @Import(DataConfig.class)
 @Testcontainers
 class OrderRepositoryR2dbcTests {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderRepositoryR2dbcTests.class);
 
     @Container
     static PostgreSQLContainer<?> postgresql = new PostgreSQLContainer<>(DockerImageName.parse("postgres:13"));
@@ -43,6 +47,13 @@ class OrderRepositoryR2dbcTests {
 
     @Test
     void findOrderByIdWhenNotExisting() {
+        log.debug(">>> DB running: " + postgresql.isRunning());
+        log.debug(">>> DB url: " + OrderRepositoryR2dbcTests.r2dbcUrl());
+
+        orderRepository.count()
+                .doOnNext(res -> log.debug("DB count: " + res))
+                .subscribe();
+
         StepVerifier.create(orderRepository.findById(394L))
                 .expectNextCount(0)
                 .verifyComplete();
@@ -50,6 +61,13 @@ class OrderRepositoryR2dbcTests {
 
     @Test
     void createRejectedOrder() {
+        log.debug(">>> DB running: " + postgresql.isRunning());
+        log.debug(">>> DB url: " + OrderRepositoryR2dbcTests.r2dbcUrl());
+
+        orderRepository.count()
+                .doOnNext(res -> log.debug("DB count: " + res))
+                .subscribe();
+
         Order rejectedOrder = new Order("1234567890", 3, OrderStatus.REJECTED);
         StepVerifier.create(orderRepository.save(rejectedOrder))
                 .expectNextMatches(order -> order.getStatus().equals(OrderStatus.REJECTED))

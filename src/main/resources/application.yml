@@ -41,7 +41,10 @@ spring:
     password: password
     connection-timeout: 15s
 
-logging.level.reactor.core.*: debug
+logging.level:
+  reactor.core.*: debug
+  io.r2dbc.postgresql.*: debug
+  com.polarbookshop.orderservice.*: debug
 
 polar:
   catalog-service-url: "http://localhost:9001/books/"
