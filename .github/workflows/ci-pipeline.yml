@@ -18,7 +18,7 @@ jobs:
       - name: Build and test application
         run: |
           chmod +x gradlew
-          ./gradlew clean build
+          ./gradlew clean build --debug --full-stacktrace
 #  package:
 #    name: Package and Publish Image
 #    needs: [build]
