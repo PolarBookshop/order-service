@@ -61,13 +61,7 @@ class OrderRepositoryR2dbcTests {
 
     @Test
     void createRejectedOrder() {
-        log.debug(">>> DB running: " + postgresql.isRunning());
-        log.debug(">>> DB url: " + OrderRepositoryR2dbcTests.r2dbcUrl());
-
-        orderRepository.count()
-                .doOnNext(res -> log.debug("DB count: " + res))
-                .subscribe();
-
+        orderRepository.deleteAll().subscribe();
         Order rejectedOrder = new Order("1234567890", 3, OrderStatus.REJECTED);
         StepVerifier.create(orderRepository.save(rejectedOrder))
                 .expectNextMatches(order -> order.getStatus().equals(OrderStatus.REJECTED))

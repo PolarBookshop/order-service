@@ -21,7 +21,7 @@ spring:
     url: jdbc:postgresql://localhost:5433/polardb_order
   cloud:
     function:
-      definition: acceptOrder;dispatchOrder
+      definition: dispatchOrder
     stream:
       bindings:
         dispatchOrder-in-0:
