@@ -6,10 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.polarbookshop.orderservice.book.Book;
 import com.polarbookshop.orderservice.book.BookClient;
 import com.polarbookshop.orderservice.order.domain.Order;
-import com.polarbookshop.orderservice.order.domain.OrderRepository;
 import com.polarbookshop.orderservice.order.domain.OrderStatus;
 import com.polarbookshop.orderservice.order.event.OrderAcceptedMessage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -44,9 +42,6 @@ class OrderControllerIntegrationTests {
 	private ObjectMapper objectMapper;
 
 	@Autowired
-	private OrderRepository orderRepository;
-
-	@Autowired
 	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 	private OutputDestination output;
 
@@ -70,11 +65,6 @@ class OrderControllerIntegrationTests {
 	private static String r2dbcUrl() {
 		return String.format("r2dbc:postgresql://%s:%s/%s", postgresql.getHost(),
 				postgresql.getFirstMappedPort(), postgresql.getDatabaseName());
-	}
-
-	@BeforeEach
-	void setup() {
-		orderRepository.deleteAll().subscribe();
 	}
 
 	@Test

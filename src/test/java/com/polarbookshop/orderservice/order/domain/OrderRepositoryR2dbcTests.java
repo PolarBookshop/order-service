@@ -1,7 +1,6 @@
 package com.polarbookshop.orderservice.order.domain;
 
 import com.polarbookshop.orderservice.order.persistence.DataConfig;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -40,11 +39,6 @@ class OrderRepositoryR2dbcTests {
     private static String r2dbcUrl() {
         return String.format("r2dbc:postgresql://%s:%s/%s", postgresql.getHost(),
                 postgresql.getFirstMappedPort(), postgresql.getDatabaseName());
-    }
-
-    @BeforeEach
-    void setup() {
-        orderRepository.deleteAll().subscribe();
     }
 
     @Test
