@@ -1,39 +1,78 @@
-server:
-  port: 9002
-  shutdown: graceful
-  netty:
-    connection-timeout: 2s
+  package com.polarbookshop.orderservice.book;
 
-spring:
-  application:
-    name: order-service
-  lifecycle:
-    timeout-per-shutdown-phase: 15s
-  r2dbc:
-    username: user
-    password: password
-    url: r2dbc:postgresql://localhost:5433/polardb_order
-    pool:
-      max-create-connection-time: 2s
-      initial-size: 5
-      max-size: 10
-  flyway:
-    user: ${spring.r2dbc.username}
-    password: ${spring.r2dbc.password}
-    url: jdbc:postgresql://localhost:5433/polardb_order
-  config:
-    import: "optional:configserver:"
-  cloud:
-    config:
-      uri: http://localhost:8888
-      request-connect-timeout: 1000 # 1s
-      request-read-timeout: 5000 # 5s
-      fail-fast: false
-      retry:
-        max-attempts: 6
-        initial-interval: 1000 # 1s
-        max-interval: 2000 # 2s
-        multiplier: 1.1
+    import java.io.IOException;
 
-polar:
-  catalog-service-url: "http://localhost:9001"
+    import okhttp3.mockwebserver.MockResponse;
+    import okhttp3.mockwebserver.MockWebServer;
+    import org.junit.jupiter.api.AfterEach;
+    import org.junit.jupiter.api.BeforeEach;
+    import org.junit.jupiter.api.Test;
+    import reactor.core.publisher.Mono;
+    import reactor.test.StepVerifier;
+
+    import org.springframework.http.HttpHeaders;
+    import org.springframework.http.MediaType;
+    import org.springframework.web.reactive.function.client.WebClient;
+
+    class BookClientTests {
+
+    private MockWebServer mockWebServer;
+    private BookClient bookClient;
+
+    @BeforeEach
+    void setup() throws IOException {
+    this.mockWebServer = new MockWebServer();
+    this.mockWebServer.start();
+
+    var webClient = WebClient.builder()
+    .baseUrl(mockWebServer.url("/").uri().toString())
+    .build();
+    this.bookClient = new BookClient(webClient);
+    }
+
+    @AfterEach
+    void clean() throws IOException {
+    this.mockWebServer.shutdown();
+    }
+
+    @Test
+    void whenBookExistsThenReturnBook() {
+    var bookIsbn = "1234567890";
+
+    var mockResponse = new MockResponse()
+    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+    .setBody("""
+    {
+  "isbn": %s,
+  "title": "Title",
+  "author": "Author",
+  "price": 9.90,
+  "publisher": "Polarsophia"
+  }
+    """.formatted(bookIsbn));
+
+		mockWebServer.enqueue(mockResponse);
+
+		Mono<Book> book = bookClient.getBookByIsbn(bookIsbn);
+
+		StepVerifier.create(book)
+				.expectNextMatches(b -> b.isbn().equals(bookIsbn))
+				.verifyComplete();
+	}
+
+	@Test
+	void whenBookNotExistsThenReturnEmpty() {
+		var bookIsbn = "1234567891";
+
+    var mockResponse = new MockResponse()
+    .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+    .setResponseCode(404);
+
+    mockWebServer.enqueue(mockResponse);
+
+    StepVerifier.create(bookClient.getBookByIsbn(bookIsbn))
+    .expectNextCount(0)
+    .verifyComplete();
+  }
+
+  }
